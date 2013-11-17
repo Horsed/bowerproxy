@@ -34,7 +34,9 @@ app.get('/install/:package', function(req, res) {
   d.run(function() {
     bowerProxy.get([req.param('package')], function(filename, error) {
       if(error) throw error;
-      res.download(filename);
+      res.set('Content-Type', 'application/zip');
+      res.set('Content-Disposition', 'attachement; filename='+req.param('package')+'.zip');
+      res.send(filename);
     });
   });
 });
@@ -48,7 +50,9 @@ app.get('/install/:package/:version', function(req, res) {
   d.run(function() {
     bowerProxy.get([req.param('package') + '#' + req.param('version')], function(filename, error) {
       if(error) throw error;
-      res.download(filename);
+      res.set('Content-Type', 'application/zip');
+      res.set('Content-Disposition', 'attachement; filename='+req.param('package')+'.zip');
+      res.send(filename);
     });
   });
 });

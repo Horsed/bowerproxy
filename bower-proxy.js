@@ -4,7 +4,7 @@ var bower = require('bower')
   , fs = require('fs')
   , AdmZip = require('adm-zip');
 
-var bowerProxy = {
+module.exports = {
   get: function(packageName, fn) {
     var tmpDir = uuid.v1();
 
@@ -16,7 +16,9 @@ var bowerProxy = {
       zip.addLocalFolder('output/' + tmpDir + '/bower_components');
       zip.writeZip('output/' + tmpDir + '/' + packageName + '.zip');
 
-      fn('output/' + tmpDir + '/' + packageName + '.zip');
+      fn(zip.toBuffer());
+
+      deleteFolderRecursive('output/' + tmpDir);
     })
     .on('error', function(err) {
       fn('', err);
@@ -24,4 +26,16 @@ var bowerProxy = {
   }
 };
 
-module.exports = bowerProxy;
+var deleteFolderRecursive = function(path) {
+  if( fs.existsSync(path) ) {
+    fs.readdirSync(path).forEach(function(file,index){
+      var curPath = path + "/" + file;
+      if(fs.statSync(curPath).isDirectory()) { // recurse
+        deleteFolderRecursive(curPath);
+      } else { // delete file
+        fs.unlinkSync(curPath);
+      }
+    });
+    fs.rmdirSync(path);
+  }
+};

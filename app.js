@@ -8,11 +8,11 @@ app.use(express.logger());
 // Configuration
 
 app.configure(function(){
-  app.set('views', __dirname + '/app');
+  app.set('views', __dirname + '/public');
   //app.set('view engine', 'jade');
   app.use(express.bodyParser());
   app.use(express.methodOverride());
-  app.use(express.static(__dirname + '/app'));
+  app.use(express.static(__dirname + '/public'));
   app.use(app.router);
   app.engine('html', require('ejs').renderFile);
   app.use(function(err, req, res, next){

@@ -21,6 +21,10 @@ app.configure(function(){
   });
 });
 
+process.on('uncaughtException', function(err) {
+  console.log('Caught exception: ' + err);
+});
+
 app.get('/', function(request, response) {
   response.render('index.html');
 });
@@ -32,11 +36,13 @@ app.get('/install/:package', function(req, res) {
     res.end(err);
   });
   d.run(function() {
-    bowerProxy.get([req.param('package')], function(filename, error) {
-      if(error) throw error;
+    bowerProxy.get([req.param('package')], function(filename) {
       res.set('Content-Type', 'application/zip');
       res.set('Content-Disposition', 'attachement; filename='+req.param('package')+'.zip');
       res.send(filename);
+    }, function(error) {
+      res.writeHead(500);
+      res.end(error);
     });
   });
 });
@@ -48,11 +54,13 @@ app.get('/install/:package/:version', function(req, res) {
     res.end(err.message);
   });
   d.run(function() {
-    bowerProxy.get([req.param('package') + '#' + req.param('version')], function(filename, error) {
-      if(error) throw error;
+    bowerProxy.get([req.param('package') + '#' + req.param('version')], function(filename) {
       res.set('Content-Type', 'application/zip');
       res.set('Content-Disposition', 'attachement; filename='+req.param('package')+'.zip');
       res.send(filename);
+    }, function(error) {
+      res.writeHead(500);
+      res.end(error);
     });
   });
 });

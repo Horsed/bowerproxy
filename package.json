@@ -1,6 +1,6 @@
 {
   "name": "bower-proxy",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "dependencies": {
     "express": "~3.0.0",
     "ejs": "~0.8.4",
@@ -48,6 +48,7 @@
     "node": ">=0.8.0"
   },
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "start": "node app"
   }
 }

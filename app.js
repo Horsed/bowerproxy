@@ -21,10 +21,6 @@ app.configure(function(){
   });
 });
 
-process.on('uncaughtException', function(err) {
-  console.log('Caught exception: ' + err);
-});
-
 app.get('/', function(request, response) {
   response.render('index.html');
 });
@@ -35,6 +31,10 @@ app.get('/install/:package', function(req, res) {
     res.writeHead(500);
     res.end(err);
   });
+
+  d.add(req);
+  d.add(res);
+  
   d.run(function() {
     bowerProxy.get([req.param('package')], function(filename) {
       res.set('Content-Type', 'application/zip');
@@ -53,6 +53,10 @@ app.get('/install/:package/:version', function(req, res) {
     res.writeHead(500);
     res.end(err.message);
   });
+  
+  d.add(req);
+  d.add(res);
+
   d.run(function() {
     bowerProxy.get([req.param('package') + '#' + req.param('version')], function(filename) {
       res.set('Content-Type', 'application/zip');

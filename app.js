@@ -20,10 +20,6 @@ app.configure(function(){
   });
 });
 
-process.on('uncaughtException', function(err) {
-  console.log('Caught exception: ' + err);
-});
-
 app.get('/', function(request, response) {
   response.render('index.html');
 });

@@ -1,6 +1,5 @@
 var express = require("express")
-  , bowerProxy = require('./bower-proxy')
-  , domain = require('domain');
+  , bowerProxy = require('./bower-proxy');
 
 var app = express();
 app.use(express.logger());
@@ -30,38 +29,24 @@ app.get('/', function(request, response) {
 });
 
 app.get('/install/:package', function(req, res) {
-  var d = domain.create();
-  d.on('error', function(err) {
+  bowerProxy.get([req.param('package')], function(filename) {
+    res.set('Content-Type', 'application/zip');
+    res.set('Content-Disposition', 'attachement; filename='+req.param('package')+'.zip');
+    res.send(filename);
+  }, function(error) {
     res.writeHead(500);
-    res.end(err);
-  });
-  d.run(function() {
-    bowerProxy.get([req.param('package')], function(filename) {
-      res.set('Content-Type', 'application/zip');
-      res.set('Content-Disposition', 'attachement; filename='+req.param('package')+'.zip');
-      res.send(filename);
-    }, function(error) {
-      res.writeHead(500);
-      res.end(error);
-    });
+    res.end(error);
   });
 });
 
 app.get('/install/:package/:version', function(req, res) {
-  var d = domain.create();
-  d.on('error', function(err) {
+  bowerProxy.get([req.param('package') + '#' + req.param('version')], function(filename) {
+    res.set('Content-Type', 'application/zip');
+    res.set('Content-Disposition', 'attachement; filename='+req.param('package')+'.zip');
+    res.send(filename);
+  }, function(error) {
     res.writeHead(500);
-    res.end(err.message);
-  });
-  d.run(function() {
-    bowerProxy.get([req.param('package') + '#' + req.param('version')], function(filename) {
-      res.set('Content-Type', 'application/zip');
-      res.set('Content-Disposition', 'attachement; filename='+req.param('package')+'.zip');
-      res.send(filename);
-    }, function(error) {
-      res.writeHead(500);
-      res.end(error);
-    });
+    res.end(error);
   });
 });
 

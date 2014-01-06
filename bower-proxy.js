@@ -1,4 +1,5 @@
 var bower = require('bower')
+  , domain = require('domain')
   , mkdirp = require('mkdirp')
   , uuid = require('node-uuid')
   , fs = require('fs')
@@ -6,30 +7,45 @@ var bower = require('bower')
 
 module.exports = {
   get: function(packageName, fn, errFn) {
-    var tmpDir = uuid.v1();
+    var d = domain.create();
+    d.on('error', function(err) {
+      errFn(err);
+    });
 
-    bower.commands
-    .search(packageName, {})
-    .on('end', function (results) {
-      if(results.length > 0) {
-        bower.commands
-        .install(packageName, {save:false}, {cwd: "output/" + tmpDir, directory: "bower_components"})
-        .on('end', function(installed) {
+    var search = bower.commands.search(packageName[0], {});
 
-          var zip = new AdmZip();
-          zip.addLocalFolder('output/' + tmpDir + '/bower_components');
-          zip.writeZip('output/' + tmpDir + '/' + packageName + '.zip');
+    d.add(search);
 
-          fn(zip.toBuffer());
+    d.run(function() {
+      var tmpDir = uuid.v1();
 
-          deleteFolderRecursive('output/' + tmpDir);
-        })
-        .on('error', function(err) {
-          errFn(err);
-        });
-      } else {
-        errFn('package ' + packageName + ' not found');
-      }
+      search.on('end', function (results) {
+        if(results.length > 0) {
+
+          var d = domain.create();
+          d.on('error', function(err) {
+            errFn(err);
+          });
+          var install = bower.commands.install(packageName, {save:false}, {cwd: "output/" + tmpDir, directory: "bower_components"});
+
+          d.add(install);
+
+          d.run(function() {
+            install.on('end', function(installed) {
+
+              var zip = new AdmZip();
+              zip.addLocalFolder('output/' + tmpDir + '/bower_components');
+              zip.writeZip('output/' + tmpDir + '/' + packageName + '.zip');
+
+              fn(zip.toBuffer());
+
+              deleteFolderRecursive('output/' + tmpDir);
+            });
+          });
+        } else {
+          errFn('package ' + packageName + ' not found');
+        }
+      });
     });
 
   }
